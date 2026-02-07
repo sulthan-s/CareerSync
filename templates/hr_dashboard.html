@@ -1,0 +1,202 @@
+<!-- hr_dashboard.html - Updated with modal triggers -->
+{% extends 'dashboard-base.html' %}
+
+{% block title %}HR Dashboard{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1>HR Dashboard</h1>
+        <div class="header-actions">
+            <div class="date-display">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="current-date"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-section">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.1);">
+                    <i class="fas fa-briefcase" style="color: #10b981;"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>{{ job_count or 0 }}</h3>
+                    <p>Active Jobs</p>
+                </div>
+                <!-- <div class="kpi-trend positive">
+                    <i class="fas fa-arrow-up"></i>
+                    12%
+                </div> -->
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(59, 130, 246, 0.1);">
+                    <i class="fas fa-users" style="color: #3b82f6;"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>{{ total_applications or 0 }}</h3>
+                    <p>Total Applications</p>
+                </div>
+                <!-- <div class="kpi-trend positive">
+                    <i class="fas fa-arrow-up"></i>
+                    24%
+                </div> -->
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.1);">
+                    <i class="fas fa-user-check" style="color: #f59e0b;"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>{{ shortlisted_count or 0 }}</h3>
+                    <p>Shortlisted</p>
+                </div>
+                <!-- <div class="kpi-trend positive">
+                    <i class="fas fa-arrow-up"></i>
+                    8%
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="dashboard-grid">
+        <!-- Activity Timeline -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3>Recent Activity</h3>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h5>{{ activity.title }}</h5>
+                                <p>{{ activity.description }}</p>
+                                <span class="timeline-time">{{ activity.time_ago }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h5>No recent activity</h5>
+                                <p>Activities will appear here as you use the platform</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Job Postings -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3>Recent Job Postings</h3>
+                <a href="{{ url_for('job_postings') }}" class="btn-text">View All →</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Job Title</th>
+                                <th>Applications</th>
+                                <th>Posted Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_jobs %}
+                                {% for job in recent_jobs %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ job.title }}</strong>
+                                        <div class="text-muted">{{ job.company }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-count">{{ job.applications|length if job.applications else 0 }}</span>
+                                    </td>
+                                    <td>{{ job.created_at.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        {% if job.status == 'active' %}
+                                        <span class="badge badge-active">Active</span>
+                                        {% elif job.status == 'closed' %}
+                                        <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;">Closed</span>
+                                        {% else %}
+                                        <span class="badge" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8;">Draft</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn-icon" title="View Details" onclick="openJobPreview({{ job.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon" title="Edit" onclick="openJobPreview({{ job.id }}, true)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem;">
+                                        <p>No job postings yet. Click "Post New Job" to get started.</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- New Candidates -->
+        <div class="dashboard-card candidate">
+            <div class="card-header">
+                <h3>New Candidates</h3>
+                <a href="{{ url_for('candidate_list') }}" class="btn-text">View All →</a>
+            </div>
+            <div class="card-body">
+                <div class="candidates-list">
+                    {% if new_candidates %}
+                        {% for candidate in new_candidates %}
+                        <div class="candidate-item">
+                            <div class="candidate-avatar">
+                                {{ candidate.get_initials() }}
+                            </div>
+                            <div class="candidate-info">
+                                <h4>{{ candidate.name }}</h4>
+                                <p>{{ candidate.experience or 'Candidate' }}</p>
+                                <div class="candidate-tags">
+                                    {% if candidate.experience %}
+                                    <span class="tag">{{ candidate.experience }}</span>
+                                    {% endif %}
+                                    {% if candidate.education %}
+                                    <span class="tag">{{ candidate.education }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="candidate-actions">
+                                <button class="btn btn-outline btn-sm view-profile" onclick="openCandidatePreview({{ candidate.id }})">
+                                    View Profile
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="candidate-item" style="justify-content: center;">
+                            <p>No new candidates yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

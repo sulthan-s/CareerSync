@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ranking</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-4">
+
+<table class="table table-bordered">
+<tr class="table-dark">
+    <th>Rank</th><th>Job</th><th>Company</th><th>Score</th><th>Gaps</th>
+</tr>
+{% for r in rankings %}
+<tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ r.job_title }}</td>
+    <td>{{ r.company }}</td>
+    <td>{{ r.score }}%</td>
+    <td>{{ r.missing_skills | join(", ") }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<a href="/" class="btn btn-secondary">Back</a>
+
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!-- templates/candidates.html -->
+{% extends 'dashboard-base.html' %}
+
+{% block title %}Candidates{% endblock %}
+
+{% block content %}
+    <div class="dashboard-header">
+        <h1>Candidates</h1>
+        <div class="header-actions">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="candidateSearch" placeholder="Search candidates...">
+            </div>
+            <!-- <button class="btn btn-outline" id="filterCandidatesBtn">
+                <i class="fas fa-filter"></i>
+                Filter
+            </button> -->
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table" id="candidatesTable">
+                    <thead>
+                        <tr>
+                            <th>Candidate</th>
+                            <th>Contact</th>
+                            <th>Experience</th>
+                            <th>Skills</th>
+                            <th>Applied Jobs</th>
+                            <th>Last Applied</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if candidates %}
+                            {% for candidate in candidates %}
+                            <tr data-candidate-id="{{ candidate.id }}">
+                                <td>
+                                    <div class="candidate-info-cell">
+                                        <div class="candidate-avatar-small">
+                                            {{ candidate.get_initials() }}
+                                        </div>
+                                        <div class="candidate-details">
+                                            <strong>{{ candidate.name }}</strong>
+                                            <div class="text-muted">{{ candidate.education or 'Education not specified' }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        <div>{{ candidate.email }}</div>
+                                        <div class="text-muted">{{ candidate.phone or 'No phone' }}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">
+                                        {{ candidate.experience or 'Not specified' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="skills-preview">
+                                        {% if candidate.skills %}
+                                            {% set skills_list = candidate.skills.split(',')[:3] %}
+                                            {% for skill in skills_list %}
+                                                <span class="skill-tag-small">{{ skill.strip() }}</span>
+                                            {% endfor %}
+                                            {% if candidate.skills.split(',')|length > 3 %}
+                                                <span class="skill-tag-small">+{{ candidate.skills.split(',')|length - 3 }}</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">No skills listed</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-count">
+                                        {% set app_count = candidate.applications|length if candidate.applications else 0 %}
+                                        {{ app_count }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if candidate.applications %}
+                                        {% set last_app = candidate.applications|sort(attribute='applied_at', reverse=true)|first %}
+                                        {{ last_app.applied_at.strftime('%b %d, %Y') }}
+                                    {% else %}
+                                        <span class="text-muted">Never</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon view-candidate-btn" title="View Profile & Analytics" data-candidate-id="{{ candidate.id }}">
+                                            <i class="fas fa-chart-line"></i>
+                                        </button>
+                                        <button class="btn-icon edit-candidate-btn" title="Edit" data-candidate-id="{{ candidate.id }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon delete-candidate-btn" title="Delete" data-candidate-id="{{ candidate.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem;">
+                                    <p>No candidates found.</p>
+                                    <p class="text-muted">Candidates will appear here when they apply to your jobs.</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Modal -->
+    <div id="candidateFiltersModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Filter Candidates</h3>
+                <button class="modal-close" id="closeFiltersModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="filterExperience">Experience</label>
+                    <select id="filterExperience" class="form-control">
+                        <option value="">All Experience Levels</option>
+                        <option value="0-2">0-2 years</option>
+                        <option value="3-5">3-5 years</option>
+                        <option value="6-10">6-10 years</option>
+                        <option value="10+">10+ years</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="filterSkills">Skills (comma separated)</label>
+                    <input type="text" id="filterSkills" class="form-control" placeholder="e.g., Python, JavaScript, React">
+                </div>
+                
+                <div class="form-group">
+                    <label for="filterEducation">Education</label>
+                    <input type="text" id="filterEducation" class="form-control" placeholder="e.g., Bachelor's, Master's, PhD">
+                </div>
+                
+                <div class="form-group">
+                    <label for="filterAppliedJobs">Applied Jobs</label>
+                    <select id="filterAppliedJobs" class="form-control">
+                        <option value="">Any job</option>
+                        {% if jobs_for_filter %}
+                            {% for job in jobs_for_filter %}
+                                <option value="{{ job.id }}">{{ job.title }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Sort By</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="sortBy" value="name" checked>
+                            <span>Name</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="sortBy" value="recent">
+                            <span>Most Recent</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="sortBy" value="applications">
+                            <span>Most Applications</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="clearFiltersBtn">Clear All</button>
+                <button type="button" class="btn btn-primary" id="applyFiltersBtn">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_modal %}
+    <!-- Candidate Analytics Modal -->
+    <div id="candidateAnalyticsModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3 id="analyticsModalTitle">Candidate Analytics</h3>
+                <button class="modal-close" id="closeAnalyticsModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="analytics-header">
+                    <div class="candidate-analytics-profile">
+                        <div class="candidate-avatar-large" id="analyticsCandidateAvatar">JD</div>
+                        <div class="candidate-analytics-info">
+                            <h2 id="analyticsCandidateName">Candidate Name</h2>
+                            <div id="analyticsCandidateEmail">email@example.com</div>
+                            <div class="candidate-analytics-meta">
+                                <span class="meta-item" id="analyticsExperience"><i class="fas fa-briefcase"></i> Experience</span>
+                                <span class="meta-item" id="analyticsEducation"><i class="fas fa-graduation-cap"></i> Education</span>
+                                <span class="meta-item" id="analyticsMatchScore"><i class="fas fa-star"></i> Overall Match Score</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-content">
+                    <!-- Match Score Overview -->
+                    <div class="analytics-section">
+                        <h4><i class="fas fa-chart-line"></i> Overall Match Score</h4>
+                        <div class="match-score-container">
+                            <div class="match-score-circle">
+                                <div class="score-circle-large" id="overallMatchCircle">
+                                    <div class="score-text-large">
+                                        <span id="overallMatchScore">0</span>%
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="match-score-details">
+                                <div class="score-breakdown">
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label">Skills Match</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="skillsMatchBar" style="width: 0%"></div>
+                                        </div>
+                                        <span class="breakdown-value" id="skillsMatchValue">0%</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label">Experience Match</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="experienceMatchBar" style="width: 0%"></div>
+                                        </div>
+                                        <span class="breakdown-value" id="experienceMatchValue">0%</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-label">Education Match</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="educationMatchBar" style="width: 0%"></div>
+                                        </div>
+                                        <span class="breakdown-value" id="educationMatchValue">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Recommendations -->
+                    <div class="analytics-section">
+                        <h4><i class="fas fa-briefcase"></i> Job Recommendations</h4>
+                        <div class="job-recommendations" id="jobRecommendations">
+                            <div class="simple-loading">
+                                <span class="loading-spinner large"></span>
+                                <p>Loading recommendations...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Application History -->
+                    <div class="analytics-section">
+                        <h4><i class="fas fa-history"></i> Application History</h4>
+                        <div class="application-history" id="applicationHistory">
+                            <div class="simple-loading">
+                                <span class="loading-spinner large"></span>
+                                <p>Loading application history...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Analysis -->
+                    <div class="analytics-section">
+                        <h4><i class="fas fa-star"></i> Skills Analysis</h4>
+                        <div class="skills-analysis">
+                            <div class="skills-cloud" id="skillsCloud">
+                                <!-- Skills will be dynamically generated here -->
+                            </div>
+                            <div class="skills-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Total Skills</span>
+                                    <span class="stat-value" id="totalSkills">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">In-Demand Skills</span>
+                                    <span class="stat-value" id="inDemandSkills">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Skill Gap</span>
+                                    <span class="stat-value" id="skillGap">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Actions -->
+                    <div class="analytics-actions">
+                        <button class="btn btn-outline" id="downloadAnalyticsBtn">
+                            <i class="fas fa-download"></i> Download Report
+                        </button>
+                        <button class="btn btn-primary" id="shortlistCandidateBtn">
+                            <i class="fas fa-check-circle"></i> Shortlist Candidate
+                        </button>
+                        <button class="btn btn-success" id="scheduleInterviewBtn">
+                            <i class="fas fa-calendar-alt"></i> Schedule Interview
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

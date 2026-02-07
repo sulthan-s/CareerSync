@@ -1,0 +1,224 @@
+<!-- templates/candidate_dashboard.html -->
+{% extends 'candidate_dashboard_base.html' %}
+
+{% block title %}Candidate Dashboard{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1>Candidate Dashboard</h1>
+        <div class="header-actions">
+            <div class="date-display">
+                <i class="fas fa-calendar-alt"></i>
+                <span>{{ current_date }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-section">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.1);">
+                    <i class="fas fa-paper-plane" style="color: #10b981;"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>{{ total_applications }}</h3>
+                    <p>Total Applications</p>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(59, 130, 246, 0.1);">
+                    <i class="fas fa-clock" style="color: #3b82f6;"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>{{ pending_applications }}</h3>
+                    <p>Pending</p>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.1);">
+                    <i class="fas fa-check-circle" style="color: #f59e0b;"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>{{ shortlisted_applications }}</h3>
+                    <p>Shortlisted</p>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(239, 68, 68, 0.1);">
+                    <i class="fas fa-times-circle" style="color: #ef4444;"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>{{ rejected_applications }}</h3>
+                    <p>Rejected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="dashboard-grid">
+        <!-- Recent Applications -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3>Recent Applications</h3>
+                <a href="{{ url_for('candidate.applications') }}" class="btn-text">View All →</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Job Title</th>
+                                <th>Company</th>
+                                <th>Applied Date</th>
+                                <th>Status</th>
+                                <th>Match Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_apps %}
+                                {% for app in recent_apps %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ app.job.title }}</strong>
+                                    </td>
+                                    <td>{{ app.job.company }}</td>
+                                    <td>{{ app.applied_at.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        {% if app.status == 'pending' %}
+                                        <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">Pending</span>
+                                        {% elif app.status == 'shortlisted' %}
+                                        <span class="badge badge-active">Shortlisted</span>
+                                        {% elif app.status == 'rejected' %}
+                                        <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;">Rejected</span>
+                                        {% elif app.status == 'hired' %}
+                                        <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">Hired</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <div style="width: 60px; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden;">
+                                                <div style="width: {{ app.match_score }}%; height: 100%; background: var(--primary-gradient); border-radius: 4px;"></div>
+                                            </div>
+                                            <span>{{ app.match_score }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem;">
+                                        <p>No applications yet. <a href="{{ url_for('candidate.job_search') }}">Start applying</a></p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recommended Jobs -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h3>Recommended Jobs</h3>
+                <a href="{{ url_for('candidate.job_search') }}" class="btn-text">Find More →</a>
+            </div>
+            <div class="card-body">
+                <div class="candidates-list">
+                    {% if recommended_jobs %}
+                        {% for job in recommended_jobs %}
+                        <div class="candidate-item">
+                            <div class="candidate-avatar" style="background: var(--primary-gradient);">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div class="candidate-info">
+                                <h4>{{ job.title }}</h4>
+                                <p>{{ job.company }} • {{ job.location }}</p>
+                                <div class="candidate-tags">
+                                    <span class="tag">{{ job.job_type|title }}</span>
+                                    {% if job.salary_range %}
+                                    <span class="tag">{{ job.salary_range }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="candidate-actions">
+                                <a href="{{ url_for('candidate.apply_job', job_id=job.id) }}" class="btn btn-outline btn-sm">
+                                    Apply Now
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="candidate-item" style="justify-content: center;">
+                            <p>No recommended jobs yet. Complete your profile for better recommendations.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Application Timeline -->
+        <div class="dashboard-card candidate">
+            <div class="card-header">
+                <h3>Application Timeline</h3>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% if applications_timeline %}
+                        {% for app in applications_timeline %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h5>{{ app.job.title }}</h5>
+                                <p>{{ app.job.company }}</p>
+                                <span class="timeline-time">
+                                    Applied on {{ app.applied_at.strftime('%b %d, %Y') }}
+                                    • 
+                                    {% if app.status == 'pending' %}
+                                    <span style="color: #f59e0b;">Pending Review</span>
+                                    {% elif app.status == 'shortlisted' %}
+                                    <span style="color: #10b981;">Shortlisted!</span>
+                                    {% elif app.status == 'rejected' %}
+                                    <span style="color: #ef4444;">Not Selected</span>
+                                    {% elif app.status == 'hired' %}
+                                    <span style="color: #3b82f6;">Hired!</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h5>No applications yet</h5>
+                                <p>Start your job search to see your application timeline here.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set current date
+        const currentDate = new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        document.querySelector('.date-display span').textContent = currentDate;
+    });
+</script>
+{% endblock %}

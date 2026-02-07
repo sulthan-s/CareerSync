@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apply</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-4">
+
+<h3>Apply for {{ job.job_title }}</h3>
+
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="resume" class="form-control mb-3" required>
+    <button class="btn btn-success">Analyze</button>
+</form>
+
+</body>
+</html>

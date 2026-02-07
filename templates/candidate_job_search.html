@@ -1,0 +1,219 @@
+{% extends 'candidate_dashboard_base.html' %}
+
+{% block title %}Job Search{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ---------- Modal Styles ---------- */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: var(--card-bg2);
+    padding: 24px;
+    width: 520px;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+
+.modal-content h3 {
+    margin-bottom: 12px;
+}
+
+.modal-content ul {
+    padding-left: 18px;
+    margin-bottom: 12px;
+}
+
+.score-badge {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="dashboard-header">
+    <h1>Job Search</h1>
+    <div class="header-actions">
+        <div class="date-display">
+            <i class="fas fa-search"></i>
+            <span>{{ jobs|length }} jobs found</span>
+        </div>
+    </div>
+</div>
+
+<!-- Jobs List -->
+<div class="dashboard-card">
+    <div class="card-body">
+        {% if jobs %}
+            <div class="candidates-list">
+                {% for job in jobs %}
+                <div class="candidate-item">
+                    <div class="candidate-avatar" style="background: var(--primary-gradient);">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+
+                    <div class="candidate-info">
+                        <h4>{{ job.title }}</h4>
+                        <p>{{ job.company }} • {{ job.location or 'Location not specified' }}</p>
+
+                        <div class="candidate-tags">
+                            <span class="tag">{{ job.job_type|title }}</span>
+                            <span class="tag">{{ job.created_at.strftime('%b %d, %Y') }}</span>
+                        </div>
+
+                        <p style="margin-top: 10px; color: var(--text-secondary); font-size: 14px;">
+                            {{ job.description[:150] }}...
+                        </p>
+                    </div>
+
+                    <div class="candidate-actions">
+                        {% if job.id in applied_job_ids %}
+                            <button class="btn btn-success btn-sm" disabled>
+                                <i class="fas fa-check"></i> Applied
+                            </button>
+                        {% else %}
+                            <a href="{{ url_for('candidate.apply_job', job_id=job.id) }}"
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-paper-plane"></i> Apply Now
+                            </a>
+                        {% endif %}
+
+                        <button class="btn btn-outline btn-sm"
+                                style="margin-top: 5px;"
+                                onclick="viewJobDetails({{ job.id }})">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+
+
+                        <button class="btn btn-outline btn-sm"
+                                style="margin-top: 5px;"
+                                onclick="analyzeJob({{ job.id }})">
+                            <i class="fas fa-brain"></i> Analyze Resume
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No jobs found.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- -------- Resume Analysis Modal -------- -->
+<div id="analysisModal" class="modal">
+    <div class="modal-content">
+        <h3>Resume – Job Match</h3>
+
+        <div class="score-badge">
+            Match Score: <span id="analysisScore">0</span>%
+        </div>
+
+        <h4>Skill Gaps</h4>
+        <ul id="analysisSkills"></ul>
+
+        <h4>Recommendations</h4>
+        <ul id="analysisSuggestions"></ul>
+
+        <div style="text-align:right;">
+            <button class="btn btn-outline" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- -------- Job Details Modal -------- -->
+<div id="jobDetailsModal" class="modal">
+    <div class="modal-content">
+        <h3 id="jobTitle"></h3>
+
+        <p><strong>Company:</strong> <span id="jobCompany"></span></p>
+        <p><strong>Location:</strong> <span id="jobLocation"></span></p>
+
+        <h4>Description</h4>
+        <p id="jobDescription"></p>
+
+        <h4>Requirements</h4>
+        <ul id="jobRequirements"></ul>
+
+        <div style="text-align:right;">
+            <button class="btn btn-outline" onclick="closeJobDetails()">Close</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ---------- Resume Analysis ---------- */
+function analyzeJob(jobId) {
+    fetch(`/dashboard/candidate/analyze-job/${jobId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            document.getElementById("analysisScore").innerText = data.score;
+
+            const skills = document.getElementById("analysisSkills");
+            skills.innerHTML = "";
+            data.skills_gap.forEach(skill => {
+                skills.innerHTML += `<li>${skill}</li>`;
+            });
+
+            const suggestions = document.getElementById("analysisSuggestions");
+            suggestions.innerHTML = "";
+            data.suggestions.forEach(s => {
+                suggestions.innerHTML += `<li>${s}</li>`;
+            });
+
+            document.getElementById("analysisModal").style.display = "flex";
+        })
+        .catch(() => alert("Resume analysis failed"));
+}
+
+function closeModal() {
+    document.getElementById("analysisModal").style.display = "none";
+}
+
+/* ---------- Job Details ---------- */
+function viewJobDetails(jobId) {
+    fetch(`/dashboard/candidate/job/${jobId}`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("jobTitle").innerText = data.title;
+            document.getElementById("jobCompany").innerText = data.company;
+            document.getElementById("jobLocation").innerText = data.location || "Not specified";
+            document.getElementById("jobDescription").innerText = data.description;
+
+            const reqList = document.getElementById("jobRequirements");
+            reqList.innerHTML = "";
+            data.requirements.split(",").forEach(req => {
+                reqList.innerHTML += `<li>${req.trim()}</li>`;
+            });
+
+            document.getElementById("jobDetailsModal").style.display = "flex";
+        })
+        .catch(() => alert("Failed to load job details"));
+}
+
+function closeJobDetails() {
+    document.getElementById("jobDetailsModal").style.display = "none";
+}
+</script>
+{% endblock %}

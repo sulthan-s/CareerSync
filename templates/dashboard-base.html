@@ -1,0 +1,483 @@
+<!-- dashboard-base.html - Updated with modals -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerSync | {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar-hr-dashboard">
+        <a href="/" class="logo">
+            <i class="fas fa-brain"></i>
+            <span>CareerSync</span>
+        </a>
+        <div class="cta-buttons">
+            <span class="nav-link" style="margin-right: 15px;">Welcome, {{ session.get('user_name', 'User') }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Content -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="user-profile">
+                    <div class="profile-avatar">
+                        {{ user.get_initials() if user else 'JD' }}
+                    </div>
+                    <div class="profile-info">
+                        <!-- Name -->
+                        <h4>{{ session.get('user_name', 'John Doe') }}</h4>
+                        <span class="badge badge-hr">{{ 'HR Manager' if session.get('user_type') == 'hr' else 'Job Seeker' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('hr_dashboard') }}" class="sidebar-link {% if request.endpoint == 'hr_dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('job_postings') }}" class="sidebar-link {% if request.endpoint == 'job_postings' %}active{% endif %}">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Job Postings</span>
+                    {% if job_count %}
+                    <span class="sidebar-badge">{{ job_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('candidate_list') }}" class="sidebar-link {% if request.endpoint == 'candidate_list' %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span>Candidates</span>
+                    {% if candidate_count %}
+                    <span class="sidebar-badge">{{ candidate_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('applications') }}" class="sidebar-link {% if request.endpoint == 'applications' %}active{% endif %}">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Applications</span>
+                    {% if application_count %}
+                    <span class="sidebar-badge">{{ application_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('analytics') }}" class="sidebar-link {% if request.endpoint == 'analytics' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block post-job-btn" id="postJobBtn">
+                    <i class="fas fa-plus"></i> Post New Job
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            {% block content %}
+            
+            {% endblock %}
+        </main>
+    </div>
+    
+    <!-- Job Posting Modal -->
+    <div id="jobModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Post New Job</h3>
+                <button class="modal-close" id="closeJobModal">×</button>
+            </div>
+            <form id="postJobForm" method="POST" action="{{ url_for('create_job') }}">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="jobTitle">Job Title *</label>
+                            <input type="text" id="jobTitle" name="title" placeholder="e.g., Senior Software Engineer" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="company">Company *</label>
+                            <input type="text" id="company" name="company" placeholder="Your company name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" placeholder="e.g., Remote, New York, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label for="salaryRange">Salary Range</label>
+                            <input type="text" id="salaryRange" name="salary_range" placeholder="e.g., $80,000 - $120,000">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jobDescription">Job Description *</label>
+                        <textarea id="jobDescription" name="description" rows="4" placeholder="Describe the role, responsibilities, and expectations..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="requirements">Requirements & Skills *</label>
+                        <textarea id="requirements" name="requirements" rows="3" placeholder="List required skills, experience, and qualifications..." required></textarea>
+                        <small>Separate requirements with commas or bullets</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Job Type</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="job_type" value="fulltime" checked>
+                                <span>Full-time</span>
+                            </label>
+
+                            <label class="radio-label">
+                                <input type="radio" name="job_type" value="parttime">
+                                <span>Part-time</span>
+                            </label>
+
+                            <label class="radio-label">
+                                <input type="radio" name="job_type" value="contract">
+                                <span>Contract</span>
+                            </label>
+
+                            <label class="radio-label">
+                                <input type="radio" name="job_type" value="remote">
+                                <span>Remote</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="cancelJob">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Post Job</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Job Preview/Edit Modal -->
+    <div id="jobPreviewModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3 id="previewModalTitle">Job Preview</h3>
+                <button class="modal-close" id="closePreviewModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-header">
+                    <div class="preview-title-section">
+                        <h2 id="previewJobTitle">Job Title</h2>
+                        <div class="preview-company" id="previewCompany">Company Name</div>
+                        <div class="preview-meta">
+                            <span class="meta-item" id="previewLocation"><i class="fas fa-map-marker-alt"></i> Location</span>
+                            <span class="meta-item" id="previewSalary"><i class="fas fa-money-bill-wave"></i> Salary</span>
+                            <span class="meta-item" id="previewJobType"><i class="fas fa-briefcase"></i> Job Type</span>
+                            <span class="meta-item" id="previewStatus"><i class="fas fa-circle"></i> Status</span>
+                        </div>
+                    </div>
+                    <div class="preview-actions">
+                        <button class="btn btn-outline btn-sm" id="toggleStatusBtn">
+                            <i class="fas fa-exchange-alt"></i> Toggle Status
+                        </button>
+                        <button class="btn btn-primary btn-sm" id="editJobBtn">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm" id="deleteJobBtn">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-content">
+                    <div class="preview-section">
+                        <h4><i class="fas fa-align-left"></i> Job Description</h4>
+                        <div class="preview-text" id="previewDescription">
+                            Loading description...
+                        </div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h4><i class="fas fa-list-check"></i> Requirements & Skills</h4>
+                        <div class="preview-text" id="previewRequirements">
+                            Loading requirements...
+                        </div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h4><i class="fas fa-info-circle"></i> Additional Information</h4>
+                        <div class="preview-grid">
+                            <div class="info-item">
+                                <span class="info-label">Posted Date:</span>
+                                <span class="info-value" id="previewPostedDate">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Last Updated:</span>
+                                <span class="info-value" id="previewUpdatedDate">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Applications:</span>
+                                <span class="info-value" id="previewApplications">0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Job ID:</span>
+                                <span class="info-value" id="previewJobId">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Form (Initially Hidden) -->
+                <form id="editJobForm" style="display: none;">
+                    <div class="edit-section">
+                        <h4><i class="fas fa-edit"></i> Edit Job Details</h4>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editJobTitle">Job Title *</label>
+                                <input type="text" id="editJobTitle" name="title" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editCompany">Company *</label>
+                                <input type="text" id="editCompany" name="company" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editLocation">Location</label>
+                                <input type="text" id="editLocation" name="location">
+                            </div>
+                            <div class="form-group">
+                                <label for="editSalaryRange">Salary Range</label>
+                                <input type="text" id="editSalaryRange" name="salary_range">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editDescription">Job Description *</label>
+                            <textarea id="editDescription" name="description" rows="4" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editRequirements">Requirements & Skills *</label>
+                            <textarea id="editRequirements" name="requirements" rows="3" required></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Job Type</label>
+                                <div class="radio-group">
+                                    <label class="radio-label">
+                                        <input type="radio" name="job_type" value="fulltime">
+                                        <span>Full-time</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="job_type" value="parttime">
+                                        <span>Part-time</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="job_type" value="contract">
+                                        <span>Contract</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="job_type" value="remote">
+                                        <span>Remote</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <div class="radio-group">
+                                    <label class="radio-label">
+                                        <input type="radio" name="status" value="active">
+                                        <span>Active</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="status" value="closed">
+                                        <span>Closed</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="status" value="draft">
+                                        <span>Draft</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="cancelEditBtn">Cancel Edit</button>
+                        <button type="submit" class="btn btn-primary" id="saveJobBtn">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidate Preview/Edit Modal -->
+    <div id="candidatePreviewModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3 id="candidateModalTitle">Candidate Profile</h3>
+                <button class="modal-close" id="closeCandidatePreviewModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-header">
+                    <div class="candidate-profile-header">
+                        <div class="candidate-avatar-large" id="candidateAvatar">JD</div>
+                        <div class="candidate-info-large">
+                            <h2 id="candidateName">Candidate Name</h2>
+                            <div class="candidate-email" id="candidateEmail">email@example.com</div>
+                            <div class="candidate-meta">
+                                <span class="meta-item" id="candidatePhone"><i class="fas fa-phone"></i> Phone</span>
+                                <span class="meta-item" id="candidateExperience"><i class="fas fa-briefcase"></i> Experience</span>
+                                <span class="meta-item" id="candidateEducation"><i class="fas fa-graduation-cap"></i> Education</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preview-actions">
+                        <button class="btn btn-primary btn-sm" id="editCandidateBtn">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm" id="deleteCandidateBtn">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                        <button class="btn btn-success btn-sm" id="downloadResumeBtn">
+                            <i class="fas fa-download"></i> Resume
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-content">
+                    <div class="preview-section">
+                        <h4><i class="fas fa-star"></i> Skills</h4>
+                        <div class="skills-container" id="candidateSkills">
+                            <span class="skill-tag">Loading skills...</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h4><i class="fas fa-history"></i> Application History</h4>
+                        <div class="applications-list" id="candidateApplications">
+                            <p>Loading applications...</p>
+                        </div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h4><i class="fas fa-info-circle"></i> Additional Information</h4>
+                        <div class="preview-grid">
+                            <div class="info-item">
+                                <span class="info-label">Member Since:</span>
+                                <span class="info-value" id="candidateMemberSince">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Total Applications:</span>
+                                <span class="info-value" id="totalApplications">0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Last Active:</span>
+                                <span class="info-value" id="lastActive">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Candidate ID:</span>
+                                <span class="info-value" id="candidateId">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Form (Initially Hidden) -->
+                <form id="editCandidateForm" style="display: none;">
+                    <div class="edit-section">
+                        <h4><i class="fas fa-user-edit"></i> Edit Candidate Details</h4>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editCandidateName">Full Name *</label>
+                                <input type="text" id="editCandidateName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editCandidateEmail">Email *</label>
+                                <input type="email" id="editCandidateEmail" name="email" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editCandidatePhone">Phone</label>
+                                <input type="text" id="editCandidatePhone" name="phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="editCandidateExperience">Experience</label>
+                                <input type="text" id="editCandidateExperience" name="experience" placeholder="e.g., 5+ years">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editCandidateEducation">Education</label>
+                                <input type="text" id="editCandidateEducation" name="education" placeholder="e.g., Bachelor's in Computer Science">
+                            </div>
+                            <div class="form-group">
+                                <label for="editCandidateResume">Resume URL</label>
+                                <input type="url" id="editCandidateResume" name="resume_url" placeholder="https://example.com/resume.pdf">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editCandidateSkills">Skills</label>
+                            <textarea id="editCandidateSkills" name="skills" rows="3" placeholder="Enter skills separated by commas"></textarea>
+                            <small>Separate skills with commas (e.g., Python, JavaScript, React)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="cancelCandidateEditBtn">Cancel Edit</button>
+                        <button type="submit" class="btn btn-primary" id="saveCandidateBtn">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content small-modal">
+            <div class="modal-header">
+                <h3 id="confirmationTitle">Confirm Action</h3>
+                <button class="modal-close" id="closeConfirmationModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="confirmation-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <p id="confirmationMessage">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="cancelConfirmationBtn">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle toast-icon"></i>
+            <div class="toast-message" id="toastMessage">Operation completed successfully!</div>
+        </div>
+    </div>
+
+    {% block extra_modal %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jobs.js') }}"></script>
+</body>
+</html>

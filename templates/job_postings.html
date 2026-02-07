@@ -1,0 +1,148 @@
+<!-- templates/job_postings.html -->
+{% extends 'dashboard-base.html' %}
+
+{% block title %}Job Postings{% endblock %}
+
+{% block content %}
+        <div class="dashboard-header">
+        <h1>Job Postings</h1>
+        <div class="header-actions">
+            <button class="btn btn-primary post-job-btn">
+                <i class="fas fa-plus"></i> Post New Job
+            </button>
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table" id="jobsTable">
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Location</th>
+                            <th>Type</th>
+                            <th>Applications</th>
+                            <th>Posted Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if jobs %}
+                            {% for job in jobs %}
+                            <tr data-job-id="{{ job.id }}">
+                                <td>
+                                    <strong>{{ job.title }}</strong>
+                                </td>
+                                <td>{{ job.company }}</td>
+                                <td>{{ job.location or 'Not specified' }}</td>
+                                <td>
+                                    <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">
+                                        {{ job.job_type|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-count">{{ job.applications|length }}</span>
+                                </td>
+                                <td>{{ job.created_at.strftime('%b %d, %Y') }}</td>
+                                <td>
+                                    {% if job.status == 'active' %}
+                                    <span class="badge badge-active">Active</span>
+                                    {% elif job.status == 'closed' %}
+                                    <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;">Closed</span>
+                                    {% else %}
+                                    <span class="badge" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8;">Draft</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon view-applications-btn" title="View Applications" data-job-id="{{ job.id }}">
+                                            <i class="fas fa-users"></i>
+                                        </button>
+                                        <button class="btn-icon edit-job-btn" title="Edit" data-job-id="{{ job.id }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon delete-job-btn" title="Delete" data-job-id="{{ job.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 2rem;">
+                                    <p>No job postings yet. Click "Post New Job" to get started.</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_modal %}
+<!-- Applications Modal -->
+<div id="applicationsModal" class="modal">
+    <div class="modal-content large-modal">
+        <div class="modal-header">
+            <h3 id="applicationsModalTitle">Job Applications</h3>
+            <button class="modal-close" id="closeApplicationsModal">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="applications-header">
+                <h4 id="applicationsJobTitle">Loading job details...</h4>
+                <div class="applications-stats">
+                    <span class="stat-item" id="totalApplicationsCount">0 applications</span>
+                    <span class="stat-item" id="activeApplicationsCount">0 active</span>
+                </div>
+            </div>
+            
+            <div class="applications-list-container">
+                <div class="applications-filters">
+                    <div class="filter-group">
+                        <label for="statusFilter">Filter by Status:</label>
+                        <select id="statusFilter" class="form-control">
+                            <option value="all">All Applications</option>
+                            <option value="pending">Pending</option>
+                            <option value="shortlisted">Shortlisted</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="hired">Hired</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="data-table" id="applicationsTable">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Applied Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applicationsTableBody">
+                            <!-- Applications will be loaded here -->
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem;">
+                                    <div class="simple-loading">
+                                        <span class="loading-spinner large" aria-hidden="true"></span>
+                                        <p>Loading applications...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

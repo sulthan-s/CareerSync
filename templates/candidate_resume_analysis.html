@@ -1,0 +1,147 @@
+<!-- templates/candidate_resume_analysis.html -->
+{% extends 'candidate_dashboard_base.html' %}
+
+{% block title %}Resume Analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analysis-card {
+        background: var(--card-bg2);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .keyword-tag {
+        display: inline-block;
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--primary-color);
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        margin: 0.25rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .keyword-tag.count-3 {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--secondary-color);
+    }
+
+    .keyword-tag.count-5 {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning-color);
+    }
+
+    .keyword-tag.count-8 {
+        background: rgba(139, 92, 246, 0.2);
+        color: var(--accent-color2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% if analysis %}
+<!-- ================= HEADER ================= -->
+<div class="dashboard-header">
+    <h1>Resume Analysis</h1>
+    <span class="text-muted">AI-powered resume insights</span>
+</div>
+
+<!-- ================= OVERALL SCORE ================= -->
+<div class="dashboard-card">
+    <div class="card-body text-center">
+        <h3>Profile Strength</h3>
+        <div style="font-size: 48px; font-weight: 700; color: var(--primary-color);">
+            {{ analysis["profile_strength"] }}%
+        </div>
+        <p class="text-muted">Based on skill match and resume similarity</p>
+    </div>
+</div>
+
+<!-- ================= TWO COLUMN GRID ================= -->
+<div class="dashboard-grid">
+
+    <!-- ===== Keyword Analysis ===== -->
+    <div class="dashboard-card">
+        <div class="card-body">
+            <h3>Keyword Frequency</h3>
+
+            {% if analysis["keyword_analysis"] %}
+                {% for keyword, count in analysis["keyword_analysis"].items() %}
+                    <span class="keyword-tag
+                        {% if count >= 8 %}count-8
+                        {% elif count >= 5 %}count-5
+                        {% elif count >= 3 %}count-3{% endif %}">
+                        {{ keyword }} ({{ count }})
+                    </span>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No keywords detected in resume.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ===== Skills Gap ===== -->
+    <div class="dashboard-card">
+        <div class="card-body">
+            <h3>Missing / Weak Skills</h3>
+
+            {% if analysis["skills_gap"] %}
+                <ul>
+                    {% for skill in analysis["skills_gap"] %}
+                        <li>{{ skill }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-success">Great! No major skill gaps detected 🎯</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= SUGGESTIONS ================= -->
+<div class="dashboard-card">
+    <div class="card-body">
+        <h3>Suggested Improvements</h3>
+
+        {% if analysis["suggested_improvements"] %}
+            <ul>
+                {% for suggestion in analysis["suggested_improvements"] %}
+                    <li>{{ suggestion }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-success">Your resume is well aligned with this job.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ================= ACTION BUTTONS ================= -->
+<div style="display: flex; gap: 10px; margin-top: 20px;">
+    <a href="{{ url_for('candidate.profile') }}" class="btn btn-primary">
+        Update Resume
+    </a>
+
+    <a href="{{ url_for('candidate.job_search') }}" class="btn btn-outline">
+        View Jobs
+    </a>
+</div>
+
+{% else %}
+<!-- ================= FALLBACK ================= -->
+<div class="dashboard-card">
+    <div class="card-body text-center">
+        <h3>Resume Analysis Unavailable</h3>
+        <p>Please upload a resume to view analysis.</p>
+        <a href="{{ url_for('candidate.profile') }}" class="btn btn-primary">
+            Upload Resume
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

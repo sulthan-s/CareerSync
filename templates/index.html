@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block content %}
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">
+            <i class="fas fa-brain"></i>
+            <span>CareerSync</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="#" class="nav-link">Jobs</a>
+            <a href="#" class="nav-link">Pricing</a>
+            <a href="#" class="nav-link">Resources</a>
+        </div>
+        <div class="cta-buttons">
+            <a href="/login" class="btn btn-outline">Sign In</a>
+            <a href="{{ url_for('home') }}" class="btn btn-primary">Explore</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>AI-Powered Career Intelligence Platform</h1>
+                <p>Transform your job search with deep learning algorithms that analyze resumes, predict job fits, and recommend personalized career paths. Trusted by 3,400+ candidates and top recruiters.</p>
+                
+                <div class="cta-buttons">
+                    <a href="#cta" class="btn btn-primary">Get Started</a>
+                </div>
+                
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-value">92%</div>
+                        <div class="stat-label">Match Accuracy</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">8.2x</div>
+                        <div class="stat-label">Faster Screening</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">3.4K+</div>
+                        <div class="stat-label">Happy Users</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <div class="dashboard-preview">
+                    <div class="dashboard-header">
+                        <div class="dashboard-title">AI Job Recommendations</div>
+                        <div class="match-score" style="display: inline-block; padding: 6px 12px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                            94% Match
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value">27</div>
+                        <div class="metric-label">New Matches Today</div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px; margin-top: 20px;">
+                        <div style="flex: 1; background: rgba(15, 23, 42, 0.8); padding: 15px; border-radius: 12px;">
+                            <div style="font-size: 14px; color: #94a3b8; margin-bottom: 5px;">Profile Strength</div>
+                            <div style="height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden;">
+                                <div style="width: 86%; height: 100%; background: var(--primary-gradient); border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div style="flex: 1; background: rgba(15, 23, 42, 0.8); padding: 15px; border-radius: 12px;">
+                            <div style="font-size: 14px; color: #94a3b8; margin-bottom: 5px;">Interview Rate</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--accent-color);">42%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2 class="section-title">Advanced Features for Modern Hiring</h2>
+            <p class="section-subtitle">Powered by state-of-the-art AI and deep learning models</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <h3>AI-Powered Resume Parsing</h3>
+                <p>Advanced NLP models extract skills, experience, education, and achievements with 99% accuracy. Supports PDF, DOCX, and even scanned documents.</p>
+                <a href="#" class="btn btn-outline" style="padding: 10px 20px; font-size: 14px;">Learn More</a>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-network-wired"></i> 
+                </div>
+                <h3>Smart Job Matching</h3>
+                <p>Our deep learning algorithms analyze 50+ parameters to match candidates with perfect job opportunities based on skills, culture, and career goals.</p>
+                <a href="#" class="btn btn-outline" style="padding: 10px 20px; font-size: 14px;">Learn More</a>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3>Career Path Prediction</h3>
+                <p>Predict your career trajectory with AI models trained on millions of career paths. Get personalized recommendations for skills to learn next.</p>
+                <a href="#" class="btn btn-outline" style="padding: 10px 20px; font-size: 14px;">Learn More</a>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Bias-Free Screening</h3>
+                <p>Advanced algorithms eliminate unconscious bias in hiring by focusing on skills and qualifications, ensuring fair opportunities for all candidates.</p>
+                <a href="#" class="btn btn-outline" style="padding: 10px 20px; font-size: 14px;">Learn More</a>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3>AI Interview Coach</h3>
+                <p>Practice interviews with our AI coach that provides real-time feedback on your answers, tone, and communication skills.</p>
+                <a href="#" class="btn btn-outline" style="padding: 10px 20px; font-size: 14px;">Learn More</a>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-square-poll-vertical"></i>
+                </div>
+                <h3>Market Intelligence</h3>
+                <p>Get real-time insights into salary trends, in-demand skills, and hiring patterns in your industry and location.</p>
+                <a href="#" class="btn btn-outline" style="padding: 10px 20px; font-size: 14px;">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="section-header">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Three simple steps to transform your career journey</p>
+        </div>
+        
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Upload Your Resume</h3>
+                <p>Simply upload your resume in any format. Our AI will analyze it in seconds, extracting key skills, experience, and achievements.</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Get AI Insights</h3>
+                <p>Receive detailed analysis of your profile strength, skill gaps, market value, and personalized career recommendations.</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Land Your Dream Job</h3>
+                <p>Get matched with perfect job opportunities, track applications, and receive guidance throughout the interview process.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" id="cta">
+        <div class="cta-card">
+            <h2>Ready to Transform Your Career?</h2>
+            <p>Join thousands of professionals who have accelerated their career growth with AI-powered insights and intelligent job matching.</p>
+            
+            <div class="cta-buttons-large">
+                <a href="{{ url_for('signup') }}" class="btn btn-primary btn-large">Start Free Trial</a>
+                <a href="#" class="btn btn-outline btn-large">Schedule a Demo</a>
+            </div>
+            
+            <div style="margin-top: 40px; font-size: 14px; color: #94a3b8;">
+                <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
+                No credit card required • 14-day free trial • Cancel anytime
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4>CareerSync</h4>
+                <p style="color: #94a3b8; margin-bottom: 20px; line-height: 1.6;">
+                    AI-powered career intelligence platform transforming how candidates find jobs and employers find talent.
+                </p>
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <a href="#" style="color: #94a3b8; font-size: 20px;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" style="color: #94a3b8; font-size: 20px;"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" style="color: #94a3b8; font-size: 20px;"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Product</h4>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Features</a>
+                    <a href="#" class="footer-link">Pricing</a>
+                    <a href="#" class="footer-link">API</a>
+                    <a href="#" class="footer-link">Documentation</a>
+                    <a href="#" class="footer-link">Status</a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Company</h4>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">About</a>
+                    <a href="#" class="footer-link">Blog</a>
+                    <a href="#" class="footer-link">Careers</a>
+                    <a href="#" class="footer-link">Press</a>
+                    <a href="#" class="footer-link">Contact</a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Legal</h4>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Privacy Policy</a>
+                    <a href="#" class="footer-link">Terms of Service</a>
+                    <a href="#" class="footer-link">Cookie Policy</a>
+                    <a href="#" class="footer-link">GDPR</a>
+                    <a href="#" class="footer-link">Security</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 CareerSync. All rights reserved.</p>
+        </div>
+    </footer>
+{% endblock %}

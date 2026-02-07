@@ -1,0 +1,99 @@
+<!-- templates/candidate_dashboard_base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerSync | {% block title %}Candidate Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar-hr-dashboard">
+        <a href="{{ url_for('candidate.candidate_dashboard') }}" class="logo">
+            <i class="fas fa-brain"></i>
+            <span>CareerSync</span>
+        </a>
+        <div class="cta-buttons">
+            <span class="nav-link" style="margin-right: 15px;">Welcome, {{ user_name }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Content -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="user-profile">
+                    <div class="profile-avatar">
+                        {{ user_name[:2].upper() if user_name else 'JS' }}
+                    </div>
+                    <div class="profile-info">
+                        <h4>{{ user_name }}</h4>
+                        <span class="badge badge-hr">Job Seeker</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('candidate.candidate_dashboard') }}" 
+                   class="sidebar-link {% if request.endpoint == 'candidate.candidate_dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('candidate.job_search') }}" 
+                   class="sidebar-link {% if request.endpoint == 'candidate.job_search' %}active{% endif %}">
+                    <i class="fas fa-search"></i>
+                    <span>Job Search</span>
+                </a>
+                <a href="{{ url_for('candidate.applications') }}" 
+                   class="sidebar-link {% if request.endpoint == 'candidate.applications' %}active{% endif %}">
+                    <i class="fas fa-file-alt"></i>
+                    <span>My Applications</span>
+                    {% if total_applications is defined %}
+                    <span class="sidebar-badge">{{ total_applications }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('candidate.profile') }}" 
+                   class="sidebar-link {% if request.endpoint == 'candidate.profile' %}active{% endif %}">
+                    <i class="fas fa-user"></i>
+                    <span>My Profile</span>
+                </a>
+                <a href="{{ url_for('candidate.resume_analysis') }}" 
+                   class="sidebar-link {% if request.endpoint == 'candidate.resume_analysis' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Resume Analysis</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('candidate.job_search') }}" class="btn btn-primary btn-block">
+                    <i class="fas fa-briefcase"></i> Find Jobs
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block extra_modal %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

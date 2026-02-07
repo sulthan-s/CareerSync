@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - CareerSync{% endblock %}
+
+{% block content %}
+<div class="background-animation">
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+</div>
+<div class="main-container">
+    <div class="login-container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <span>CareerSync</span>
+            </div>
+            
+            <h1 class="tagline">AI-Powered Career Intelligence Platform</h1>
+            <p class="subtitle">Transform your job search with deep learning algorithms that analyze resumes, predict job fits, and recommend personalized career paths.</p>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div class="login-header">
+                <h2>Welcome!</h2>
+                <p>Sign up to access your smart resume analytics and personalized job feed</p>
+            </div>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form id="signupForm" method="POST" action="{{ url_for('signup') }}">
+                <!-- User Type Selection -->
+                <div class="form-group">
+                    <div class="user-type-toggle">
+                        <input type="radio" id="jobseeker" name="user_type" value="jobseeker" checked hidden>
+                        <input type="radio" id="hr" name="user_type" value="hr" hidden>
+                        
+                        <label for="jobseeker" class="user-type-label user-type-selected">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>Job Seeker</span>
+                        </label>
+                        <label for="hr" class="user-type-label">
+                            <i class="fas fa-briefcase"></i>
+                            <span>HR / Recruiter</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-with-icon">
+                        <input type="text" name="name" placeholder="Full Name" required>
+                    </div>
+                </div>
+
+                <div class="form-group straight-field">
+                    <div class="input-with-icon">
+                        <input type="email" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="space"></div>
+                    <div class="input-with-icon">
+                        <input type="password" name="password" placeholder="Password" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-with-icon">
+                        <input type="tel" name="phone" placeholder="Phone Number" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    Create Account <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <p class="signup-link">
+                Already have an account? <a href="{{ url_for('login') }}">Sign In</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

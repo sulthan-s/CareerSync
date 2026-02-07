@@ -1,0 +1,150 @@
+<!-- templates/candidate_applications.html -->
+{% extends 'candidate_dashboard_base.html' %}
+
+{% block title %}My Applications{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1>My Applications</h1>
+        <div class="header-actions">
+            <div class="date-display">
+                <i class="fas fa-filter"></i>
+                <span>Filter applications</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="dashboard-card" style="margin-bottom: 20px;">
+        <div class="card-body">
+            <div style="display: flex; gap: 20px; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label style="display: block; color: var(--text-secondary); margin-bottom: 8px; font-size: 14px;">Filter by Status</label>
+                    <select id="statusFilter" class="form-control" onchange="filterApplications()">
+                        <option value="all" {% if request.args.get('status', 'all') == 'all' %}selected{% endif %}>All Applications</option>
+                        <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="shortlisted" {% if request.args.get('status') == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                        <option value="rejected" {% if request.args.get('status') == 'rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="hired" {% if request.args.get('status') == 'hired' %}selected{% endif %}>Hired</option>
+                    </select>
+                </div>
+                
+                <div style="flex: 1;">
+                    <label style="display: block; color: var(--text-secondary); margin-bottom: 8px; font-size: 14px;">Sort By</label>
+                    <select id="sortFilter" class="form-control" onchange="filterApplications()">
+                        <option value="newest" {% if request.args.get('sort', 'newest') == 'newest' %}selected{% endif %}>Newest First</option>
+                        <option value="oldest" {% if request.args.get('sort') == 'oldest' %}selected{% endif %}>Oldest First</option>
+                        <option value="match" {% if request.args.get('sort') == 'match' %}selected{% endif %}>Match Score</option>
+                        <option value="status" {% if request.args.get('sort') == 'status' %}selected{% endif %}>Status</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <button onclick="clearFilters()" class="btn btn-outline" style="padding: 10px 20px;">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="dashboard-card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Location</th>
+                            <th>Applied Date</th>
+                            <th>Status</th>
+                            <th>Match Score</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if applications %}
+                            {% for app in applications %}
+                            <tr>
+                                <td>
+                                    <strong>{{ app.job.title }}</strong>
+                                </td>
+                                <td>{{ app.job.company }}</td>
+                                <td>{{ app.job.location or 'Not specified' }}</td>
+                                <td>{{ app.applied_at.strftime('%b %d, %Y') }}</td>
+                                <td>
+                                    {% if app.status == 'pending' %}
+                                    <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">Pending</span>
+                                    {% elif app.status == 'shortlisted' %}
+                                    <span class="badge badge-active">Shortlisted</span>
+                                    {% elif app.status == 'rejected' %}
+                                    <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;">Rejected</span>
+                                    {% elif app.status == 'hired' %}
+                                    <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">Hired</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 60px; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden;">
+                                            <div style="width: {{ app.match_score or 70 }}%; height: 100%; background: var(--primary-gradient); border-radius: 4px;"></div>
+                                        </div>
+                                        <span>{{ app.match_score or 70 }}%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="btn-icon" title="View Job" onclick="window.location.href='{{ url_for('candidate.job_search') }}?search={{ app.job.title }}'">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    {% if app.status == 'pending' %}
+                                    <button class="btn-icon" title="Withdraw" onclick="withdrawApplication({{ app.id }})" style="color: #ef4444;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem;">
+                                    <p>No applications found.</p>
+                                    <a href="{{ url_for('candidate.job_search') }}" class="btn btn-primary" style="margin-top: 10px;">
+                                        <i class="fas fa-search"></i> Find Jobs
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterApplications() {
+        const status = document.getElementById('statusFilter').value;
+        const sort = document.getElementById('sortFilter').value;
+        
+        let url = '{{ url_for("candidate.applications") }}?';
+        if (status !== 'all') url += `status=${status}&`;
+        if (sort !== 'newest') url += `sort=${sort}`;
+        
+        window.location.href = url;
+    }
+    
+    function clearFilters() {
+        window.location.href = '{{ url_for("candidate.applications") }}';
+    }
+    
+    function withdrawApplication(applicationId) {
+        if (confirm('Are you sure you want to withdraw this application?')) {
+            // In a real app, you would make an API call here
+            alert('Application withdrawal feature coming soon!');
+        }
+    }
+</script>
+{% endblock %}
